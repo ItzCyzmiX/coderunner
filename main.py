@@ -72,4 +72,4 @@ async def run_code(request: CodeRequest):
 
 @app.get("/")
 async def root():
-    return {"message": "Python Code Runner API"}
+    return {"langs": ["python", "javascript"]}
