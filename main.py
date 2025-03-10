@@ -23,8 +23,12 @@ async def run_code(request: CodeRequest):
     # Create a unique ID for this execution
     execution_id = str(uuid.uuid4())
     
+    extenstion = ".py"
+    if request.lang == "javascript":
+        extenstion = ".js"
+    
     # Create a temporary file with the code
-    with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_file:
+    with tempfile.NamedTemporaryFile(suffix=extenstion, delete=False) as temp_file:
         temp_file_path = temp_file.name
         temp_file.write(request.code.encode())
     
