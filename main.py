@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Security
+from fastapi.security import OAuth2PasswordBearer
+from starlette.status import HTTP_401_UNAUTHORIZED
 from pydantic import BaseModel
 import subprocess
 import tempfile
@@ -6,6 +8,7 @@ import os
 import uuid
 
 app = FastAPI(title="Python Code Runner API")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 class CodeRequest(BaseModel):
     code: str
@@ -17,9 +20,17 @@ class CodeResponse(BaseModel):
     error: str = None
     execution_time: float = None
     
+def verify_token(token: str = Security(oauth2_scheme)):
+    if token != os.environ.get('API_AUTH_KEY'):
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return token
 
 @app.post("/run", response_model=CodeResponse)
-async def run_code(request: CodeRequest):
+async def run_code(request: CodeRequest, token: str = Depends(verify_token)):
     # Create a unique ID for this execution
     execution_id = str(uuid.uuid4())
     temp_file_path = ""
