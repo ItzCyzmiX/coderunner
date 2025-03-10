@@ -22,7 +22,7 @@ class CodeResponse(BaseModel):
 async def run_code(request: CodeRequest):
     # Create a unique ID for this execution
     execution_id = str(uuid.uuid4())
-    
+    temp_file_path = ""
     extenstion = ".py"
     if request.lang == "javascript":
         extenstion = ".js"
