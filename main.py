@@ -41,7 +41,7 @@ async def run_code(request: CodeRequest, token: str = Depends(verify_token)):
     execution_id = str(uuid.uuid4())
     
     challenge_q = supabase.from_('coding_challenges').select('*').eq('id', request.chanllenge_id)
-    challenge = challenge_q["data"][0]
+    challenge = challenge_q.get("data")[0]
     
     temp_file_path = ""
     extenstion = ".py"
@@ -53,8 +53,8 @@ async def run_code(request: CodeRequest, token: str = Depends(verify_token)):
         temp_file_path = temp_file.name
         code = request.code.encode() + '\n'
         
-        for test in challenge["tests"]:
-            code += test["callback"] + '\n'
+        for test in challenge.get("tests"):
+            code += test.get("callback") + '\n'
         
         
         temp_file.write(code)
