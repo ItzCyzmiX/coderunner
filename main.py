@@ -6,6 +6,11 @@ import subprocess
 import tempfile
 import os
 import uuid
+from supabase import create_client, Client
+
+url: str = os.environ.get('SUPABASE_URL')
+key: str = os.environ.get('SUPABASE_KEY')
+supabase: Client = create_client(url, key)
 
 app = FastAPI(title="Python Code Runner API")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -13,6 +18,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 class CodeRequest(BaseModel):
     code: str
     lang: str
+    chanllenge_id: str
     timeout: int = 5  # Default timeout in seconds
 
 class CodeResponse(BaseModel):
@@ -33,6 +39,10 @@ def verify_token(token: str = Security(oauth2_scheme)):
 async def run_code(request: CodeRequest, token: str = Depends(verify_token)):
     # Create a unique ID for this execution
     execution_id = str(uuid.uuid4())
+    
+    challenge_q = supabase.from_('coding_challenges').select('*').eq('id', request.chanllenge_id)
+    challenge = challenge_q["data"][0]
+    
     temp_file_path = ""
     extenstion = ".py"
     if request.lang == "javascript":
@@ -41,7 +51,13 @@ async def run_code(request: CodeRequest, token: str = Depends(verify_token)):
     # Create a temporary file with the code
     with tempfile.NamedTemporaryFile(suffix=extenstion, delete=False) as temp_file:
         temp_file_path = temp_file.name
-        temp_file.write(request.code.encode())
+        code = request.code.encode() + '\n'
+        
+        for test in challenge["tests"]:
+            code += test["callback"] + '\n'
+        
+        
+        temp_file.write(code)
     
     try:
         # Run the code in a separate process with timeout
