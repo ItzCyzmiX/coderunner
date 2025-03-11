@@ -51,13 +51,13 @@ async def run_code(request: CodeRequest, token: str = Depends(verify_token)):
     # Create a temporary file with the code
     with tempfile.NamedTemporaryFile(suffix=extenstion, delete=False) as temp_file:
         temp_file_path = temp_file.name
-        code = request.code.encode() + '\n'
+        code = request.code + '\n'
         
         for test in challenge.get("tests"):
             code += test.get("callback") + '\n'
         
         
-        temp_file.write(code)
+        temp_file.write(code.encode())
     
     try:
         # Run the code in a separate process with timeout
