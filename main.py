@@ -41,7 +41,7 @@ async def run_code(request: CodeRequest, token: str = Depends(verify_token)):
     execution_id = str(uuid.uuid4())
     
     challenge_q = supabase.table('coding_challenges').select('*').eq('id', request.chanllenge_id).execute()
-    challenge = challenge_q.get("data")[0]
+    challenge = challenge_q.data
     
     temp_file_path = ""
     extenstion = ".py"
