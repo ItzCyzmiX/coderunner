@@ -40,7 +40,7 @@ async def run_code(request: CodeRequest, token: str = Depends(verify_token)):
     # Create a unique ID for this execution
     execution_id = str(uuid.uuid4())
     
-    challenge_q = await supabase.from_('coding_challenges').select('*').eq('id', request.chanllenge_id)
+    challenge_q = supabase.table('coding_challenges').select('*').eq('id', request.chanllenge_id).execute()
     challenge = challenge_q.get("data")[0]
     
     temp_file_path = ""
